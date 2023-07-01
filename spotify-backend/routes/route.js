@@ -10,7 +10,7 @@ const {createSong ,getMySong , getSongByArtist , getSongByName} = require("../co
 // this POST route will help to register a user
 router.post("/register" , signup);
 router.post("/login" , login);
-router.post("/songs/create" ,passport.authenticate("jwt" , {session:false}), createSong);
+router.post("/song/create" ,passport.authenticate("jwt" , {session:false}), createSong);
 router.get("/get/mySongs" ,passport.authenticate("jwt" , {session:false}) ,getMySong);
 
 
