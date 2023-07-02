@@ -1,11 +1,20 @@
 const Song = require("../model/Song");
 const User = require("../model/User");
+const jwt = require("jsonwebtoken");
 
 //! create song 
 exports.createSong = async (req, res) => {
   try {
     const { name, thumbnail, track } = req.body;
-    const artist = req.user._id;
+
+    const token = req.cookies.token || req.get('Authorization').replace('Bearer ','');
+    console.log(`token `, token );
+    
+
+    const payload = jwt.decode(token);
+    console.log('createSONG PAYLOAD ' , payload);
+    const artist = payload.id;
+    console.log('cretesong artist ',artist);
 
     //   validation
     if (!name || !thumbnail || !track || !artist) {
@@ -35,23 +44,33 @@ exports.createSong = async (req, res) => {
 exports.getMySong = async (req, res) => {
   try {
     //
-    const currentUser = req.user;
-    console.log(`currentUser` ,currentUser);
+    const token = req.cookies.token || req.get('Authorization').replace('Bearer ', '');
+    console.log(`currentUser` ,token );
+
+    try {
+      const payload = jwt.decode(token);
+      console.log(`paylaod `,payload);
+      
+      const currentUserId = payload.id;
+      console.log(`currentUserId ` ,  currentUserId )
+
+      const allSongs = await Song.find({ artist: currentUserId }).populate("artist")
+
+      return res.status(200).json({
+        data: allSongs,
+        success: true,
+        message: `all song are fetch `,
+      });
     
-    // we need to get all songs where artist.id === currentUser._id
-
-    const allSongs = await Song.find({ artist: req.user._id });
-
-    return res.status(200).json({
-      data: allSongs,
-      success: true,
-      message: `all song are fetch `,
-    });
+    } catch (error) {
+      console.error('Error decoding token:', error);
+    }
+  
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: `there is an error in getall song`,
+      message: `there is an error in get all song`,
     });
   }
 };
